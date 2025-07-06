@@ -4,6 +4,10 @@ require 'spec_helper'
 require 'bitcoin_ruby_cli/wallet'
 
 RSpec.describe BitcoinRubyCli::Wallet do
+    after :each do
+        File.delete('wallet.key') if File.exist?('wallet.key')
+    end
+
     describe '#initialize' do
         it 'creates a wallet with a new key pair' do
             wallet = BitcoinRubyCli::Wallet.new
@@ -11,6 +15,21 @@ RSpec.describe BitcoinRubyCli::Wallet do
             expect(wallet.instance_variable_get(:@priv_key)).not_to be_nil
             expect(wallet.instance_variable_get(:@pub_key)).not_to be_nil
             expect(wallet.instance_variable_get(:@address)).not_to be_nil
+        end
+
+        it 'is consistent between initializations' do
+            wallet = BitcoinRubyCli::Wallet.new
+            pub_key = wallet.instance_variable_get(:@pub_key)
+            wallet = BitcoinRubyCli::Wallet.new
+            pub_key2 = wallet.instance_variable_get(:@pub_key)
+            expect(pub_key).to eq(pub_key2)
+        end
+
+        context 'signet' do
+            it 'generates a valid Bitcoin address' do
+                wallet = BitcoinRubyCli::Wallet.new
+                expect(wallet.address).to match(/^[mn2][a-km-zA-HJ-NP-Z1-9]{25,34}$/)
+            end
         end
 
         context 'when a wallet file exists' do
