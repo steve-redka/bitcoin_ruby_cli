@@ -18,9 +18,14 @@ module BitcoinRubyCli
     def balance
       p Wallet.new.balance
     end
-    desc "send RECEPIENT AMOUNT", "Send Bitcoin satoshis to a specified address"
+    desc "send RECEPIENT AMOUNT", "Send Bitcoin to a specified address"
     def send(recepient, amount)
-      Wallet.new.send_to(recepient, amount.to_i, 300)
+      if amount.include?('.')
+        amount = (amount.to_f * 100_000_000).to_i # Convert to satoshis
+      else
+        amount = amount.to_i
+      end
+      Wallet.new.send_to(recepient, amount, 300)
     end
   end
 end
