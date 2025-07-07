@@ -12,15 +12,15 @@ module BitcoinRubyCli
     end
     desc "create", "Create a new Bitcoin wallet"
     def create
-        puts "todo"
+      Wallet.new
     end
-    desc "balance", "Fetch the balance of the Bitcoin wallet"
+    desc "balance", "Fetch the balance of the Bitcoin wallet, in satoshis"
     def balance
-        puts "todo"
+      p Wallet.new.balance
     end
-    desc "send", "Send Bitcoin to a specified address"
-    def send
-        puts "todo"
+    desc "send RECEPIENT AMOUNT", "Send Bitcoin satoshis to a specified address"
+    def send(recepient, amount)
+      Wallet.new.send_to(recepient, amount.to_i, 300)
     end
   end
 end
