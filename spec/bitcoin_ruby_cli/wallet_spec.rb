@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'bitcoin_ruby_cli/wallet'
+require 'vcr'
 
 RSpec.describe BitcoinRubyCli::Wallet do
     after :each do
@@ -15,6 +16,13 @@ RSpec.describe BitcoinRubyCli::Wallet do
             expect(wallet.instance_variable_get(:@priv_key)).not_to be_nil
             expect(wallet.instance_variable_get(:@pub_key)).not_to be_nil
             expect(wallet.instance_variable_get(:@address)).not_to be_nil
+        end
+
+        it 'creates a wallet with a valid private key' do
+            priv_key = '8bcc659608872fd0151268ed61a14e07614952245546215d9572c01469e20757'
+            wallet = BitcoinRubyCli::Wallet.new(priv_key)
+            expect(wallet).to be_a(BitcoinRubyCli::Wallet)
+            expect(wallet.address).to eq 'miWUVwvAChPzRkXKiYLfcNejxBteZwrNdF'
         end
 
         it 'is consistent between initializations' do
@@ -46,4 +54,18 @@ RSpec.describe BitcoinRubyCli::Wallet do
             end
         end
     end
+
+    describe '#balance' do
+        it 'fetches the balance for the wallet address' do
+            VCR.use_cassette("bitcoin balance") do
+                priv_key = '8bcc659608872fd0151268ed61a14e07614952245546215d9572c01469e20757'
+                wallet = BitcoinRubyCli::Wallet.new(priv_key)
+                expect(wallet.balance).to be_a(Float)
+                expect(wallet.balance).to be >= 0
+                # It's a test address. I assume it shouldn't be empty.
+                # https://mempool.space/signet/address/miWUVwvAChPzRkXKiYLfcNejxBteZwrNdF
+            end
+        end
+    end
 end
+
