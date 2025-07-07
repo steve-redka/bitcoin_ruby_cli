@@ -15,3 +15,7 @@ group :test do
     gem 'webmock'
     gem "rspec", "~> 3.0"
 end
+
+group :development, :test do
+    gem 'pry'
+end

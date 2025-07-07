@@ -59,11 +59,33 @@ RSpec.describe BitcoinRubyCli::Wallet do
         it 'fetches the balance for the wallet address' do
             VCR.use_cassette("bitcoin balance") do
                 priv_key = '8bcc659608872fd0151268ed61a14e07614952245546215d9572c01469e20757'
-                wallet = BitcoinRubyCli::Wallet.new(priv_key)
-                expect(wallet.balance).to be_a(Float)
-                expect(wallet.balance).to be >= 0
                 # It's a test address. I assume it shouldn't be empty.
                 # https://mempool.space/signet/address/miWUVwvAChPzRkXKiYLfcNejxBteZwrNdF
+                wallet = BitcoinRubyCli::Wallet.new(priv_key)
+                expect(wallet.balance).to be_a(Integer)
+                expect(wallet.balance).to be >= 0
+            end
+        end
+    end
+
+    describe '#send_to' do
+        it 'raises error if not enough balance', :vcr do
+            low_balance_key = '7176a4e959b144d0a49dc3637c1ec57549a3e6db8e0b1c0a230d44d6950e546c'
+            wallet = BitcoinRubyCli::Wallet.new(low_balance_key)
+            expect {
+              wallet.send_to('miDz8iHf2K3uC6DFdj6MovQSw276ow5eKD', 1_000_000_000, 1000)
+            }.to raise_error(/Not enough balance/)
+        end
+
+        it 'sends Bitcoin to a specified address' do
+            VCR.use_cassette("wallet_sends_bitcoin") do
+                priv_key = '8bcc659608872fd0151268ed61a14e07614952245546215d9572c01469e20757'
+                sender_wallet = BitcoinRubyCli::Wallet.new(priv_key)
+                target_address = 'miDz8iHf2K3uC6DFdj6MovQSw276ow5eKD'
+
+                expect {
+                    sender_wallet.send_to(target_address, 1000, 300)
+                }.to output(/Broadcasted! TXID: \h{64}/).to_stdout
             end
         end
     end
