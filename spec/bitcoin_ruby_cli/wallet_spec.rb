@@ -73,7 +73,7 @@ RSpec.describe BitcoinRubyCli::Wallet do
             low_balance_key = '7176a4e959b144d0a49dc3637c1ec57549a3e6db8e0b1c0a230d44d6950e546c'
             wallet = BitcoinRubyCli::Wallet.new(low_balance_key)
             expect {
-              wallet.send_to('miDz8iHf2K3uC6DFdj6MovQSw276ow5eKD', 1_000_000_000, 1000)
+              wallet.send_to('miDz8iHf2K3uC6DFdj6MovQSw276ow5eKD', 1_000_000_000)
             }.to raise_error(/Not enough balance/)
         end
 
@@ -84,7 +84,7 @@ RSpec.describe BitcoinRubyCli::Wallet do
                 target_address = 'miDz8iHf2K3uC6DFdj6MovQSw276ow5eKD'
 
                 expect {
-                    sender_wallet.send_to(target_address, 1000, 300)
+                    sender_wallet.send_to(target_address, 1000)
                 }.to output(/Broadcasted! TXID: \h{64}/).to_stdout
             end
         end

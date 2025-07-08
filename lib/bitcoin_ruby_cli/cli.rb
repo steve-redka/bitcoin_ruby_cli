@@ -52,7 +52,7 @@ module BitcoinRubyCli
                else
                  amount.to_i
                end
-      Wallet.new.send_to(recepient, amount, 300)
+      Wallet.new.send_to(recepient, amount)
     end
 
     default_task :inspect

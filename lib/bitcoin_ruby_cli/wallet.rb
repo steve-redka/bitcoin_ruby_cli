@@ -43,9 +43,9 @@ module BitcoinRubyCli
             end
         end
 
-        def send_to(recipient_address, amount_sats, fee_sats)
+        def send_to(recipient_address, amount_sats)
             # raw_tx = tx.to_payload.unpack1("H*")
-            tx = TransactionBuilder.new(sender_key: @key, recipient_address: recipient_address, amount_sats: amount_sats, fee_sats: fee_sats).build
+            tx = TransactionBuilder.new(sender_key: @key, recipient_address: recipient_address, amount_sats: amount_sats).build
             raw_tx = tx.to_payload.unpack1("H*")
             puts "Raw signed tx: #{raw_tx}"
         

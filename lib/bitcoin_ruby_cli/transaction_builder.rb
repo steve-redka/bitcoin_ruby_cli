@@ -1,10 +1,9 @@
 module BitcoinRubyCli
     class TransactionBuilder
-      def initialize(sender_key:, recipient_address:, amount_sats:, fee_sats:)
+      def initialize(sender_key:, recipient_address:, amount_sats:)
         @key = sender_key
         @recipient_address = recipient_address
         @amount_sats = amount_sats
-        @fee_sats = fee_sats
       end
   
       def build
@@ -13,14 +12,18 @@ module BitcoinRubyCli
         utxos = fetch_utxos
         @total_input = 0
         @inputs = []
+        @fee_sats = 0
 
         utxos.each do |utxo|
-
-            break if @total_input >= @amount_sats + @fee_sats
-    
-            @total_input += utxo["value"]
-            @inputs << utxo
-        end
+          @inputs << utxo
+          @total_input += utxo["value"]
+        
+          @fee_sats = estimate_fee(inputs: @inputs.size, outputs: 2, fee_rate: fetch_fee_rate)
+          
+          if @total_input >= @amount_sats + @fee_sats
+            break
+          end
+        end    
 
         validate_enough_balance            
         
@@ -49,7 +52,6 @@ module BitcoinRubyCli
       private
 
       def validate_enough_balance
-        
         if @total_input < @amount_sats + @fee_sats
             raise "Not enough balance. Need at least #{@amount_sats + @fee_sats} sats"
         end
@@ -84,6 +86,17 @@ module BitcoinRubyCli
             script_sig = Bitcoin::Script.new << signature << pubkey
             @tx.in[index].script_sig = script_sig
         end 
+      end
+
+      def fetch_fee_rate
+        uri = URI("https://mempool.space/signet/api/v1/fees/recommended")
+        res = Net::HTTP.get(uri)
+        JSON.parse(res)["fastestFee"]
+      end
+
+      def estimate_fee(inputs:, outputs:, fee_rate:)
+        tx_size = 10 + inputs * 148 + outputs * 34
+        tx_size * fee_rate
       end
     end
   end
